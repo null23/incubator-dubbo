@@ -87,6 +87,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
+
+    // TODO
+    // 这里其实就是获取的默认的扩展点，获取的是 Protocol 类上的 @SPI 里的 dubbo 协议
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     /**

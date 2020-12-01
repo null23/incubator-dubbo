@@ -329,6 +329,8 @@ public class ExtensionLoader<T> {
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
+     *
+     * 获取对应的扩展点实例，比如在 META-INF 里自定义的协议的实例
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
@@ -344,7 +346,11 @@ public class ExtensionLoader<T> {
             synchronized (holder) {
                 instance = holder.get();
                 if (instance == null) {
+
+                    // 创建自己定义的扩展点，MyProtocol 的实例
                     instance = createExtension(name);
+
+                    // 缓存起来
                     holder.set(instance);
                 }
             }
@@ -517,7 +523,11 @@ public class ExtensionLoader<T> {
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * name 其实就是在 META-INF 配置文件里定义的 key，比如 myprotocol
+     */
     private T createExtension(String name) {
+        // 这个其实就是 MyProtocol.class
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
             throw findException(name);
@@ -525,9 +535,13 @@ public class ExtensionLoader<T> {
         try {
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
             if (instance == null) {
+                // 创建一个新的实例
                 EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
+
+            // 依赖注入
+            // 通过 setter 注入 instance 实例所需要的成员变量，这个成员变量肯定是 @SPI 注解修饰的一个扩展点
             injectExtension(instance);
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
@@ -610,12 +624,18 @@ public class ExtensionLoader<T> {
         return getExtensionClasses().get(name);
     }
 
+    /**
+     * 根据 keyName 从缓存的类型map中获取扩展点要加载的类
+     * key: keyName，例如 myprotol，或者 dubbo 默认实现的一些协议
+     * value：实例的类型，比如 MyProtocol.class
+     */
     private Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
         if (classes == null) {
             synchronized (cachedClasses) {
                 classes = cachedClasses.get();
                 if (classes == null) {
+                    // 加载扩展点的配置文件
                     classes = loadExtensionClasses();
                     cachedClasses.set(classes);
                 }
@@ -625,7 +645,13 @@ public class ExtensionLoader<T> {
     }
 
     // synchronized in getExtensionClasses
+
+    /**
+     * 加载一些扩展点的配置文件，在我们自己实现的 META-INF 目录下的那些，以及 dubbo 自己定义的 META-INF 的那些
+     * @return
+     */
     private Map<String, Class<?>> loadExtensionClasses() {
+        // 加载当前类的默认扩展点，也就是 @SPI 注解修饰的，@SPI("dubbo") 里的这个默认值对应的扩展点
         cacheDefaultExtensionName();
 
         Map<String, Class<?>> extensionClasses = new HashMap<>();
@@ -640,6 +666,8 @@ public class ExtensionLoader<T> {
 
     /**
      * extract and cache default extension name if exists
+     *
+     * 获取当前 Class 的 @SPI 注解里的默认值
      */
     private void cacheDefaultExtensionName() {
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
@@ -658,6 +686,12 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 加载 META-INF 目录下的扩展点，并且解析
+     * @param extensionClasses
+     * @param dir
+     * @param type
+     */
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
         String fileName = dir + type;
         try {
