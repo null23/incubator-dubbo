@@ -32,6 +32,10 @@ import java.util.List;
 
 /**
  * ListenerProtocol
+ *
+ * 这个就是一个作为 filter 的 wrapper 类
+ * 使用了 Protocol 扩展点作为构造函数
+ * 作为一个扩展点的实现类，只要有构造函数，就是一个 Wrapper 类
  */
 public class ProtocolFilterWrapper implements Protocol {
 

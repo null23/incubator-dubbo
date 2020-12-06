@@ -78,6 +78,9 @@ public class ExtensionLoader<T> {
 
     // ==============================
 
+    /**
+     * type 就是扩展点接口的类类型，比如 org.apache.dubbo.rpc.Protocol
+     */
     private final Class<?> type;
 
     private final ExtensionFactory objectFactory;
@@ -141,6 +144,9 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 获取 ApplicationClassLoader，通过线程上下文打破双亲委派模型
+     */
     private static ClassLoader findClassLoader() {
         return ClassHelper.getClassLoader(ExtensionLoader.class);
     }
@@ -200,6 +206,8 @@ public class ExtensionLoader<T> {
      * @param group  group
      * @return extension list which are activated
      * @see org.apache.dubbo.common.extension.Activate
+     *
+     * 获取自动激活扩展点
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         List<T> exts = new ArrayList<>();
@@ -473,6 +481,9 @@ public class ExtensionLoader<T> {
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * 获取自适应扩展点
+     */
     public T getAdaptiveExtension() {
         Object instance = cachedAdaptiveInstance.get();
         if (instance == null) {
@@ -540,9 +551,13 @@ public class ExtensionLoader<T> {
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
 
-            // 依赖注入
-            // 通过 setter 注入 instance 实例所需要的成员变量，这个成员变量肯定是 @SPI 注解修饰的一个扩展点
+            // TODO 这里就是 Dubbo 的 IoC，通过 setter 对扩展点所需要的扩展点进行依赖注入
+            // 扩展点依赖了扩展点，进行依赖注入
+            // 通过 setter 注入 instance 实例所需要的成员变量
+            // 这个成员变量肯定是 @SPI 注解修饰的一个扩展点
             injectExtension(instance);
+
+            // 遍历所有包装类的实例，用于初始化包装类实例
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
                 for (Class<?> wrapperClass : wrapperClasses) {
@@ -556,10 +571,15 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * Dubbo 实现的 IoC，通过 setter 方法实现依赖注入，仅仅注入 扩展点也是依赖 的这种情况
+     * 对扩展点所需的依赖（也是一个扩展点）进行依赖注入
+     */
     private T injectExtension(T instance) {
         try {
             if (objectFactory != null) {
                 for (Method method : instance.getClass().getMethods()) {
+                    // 如果方法是以 setter 开头的
                     if (isSetter(method)) {
                         /**
                          * Check {@link DisableInject} to see if we need auto injection for this property
@@ -573,6 +593,8 @@ public class ExtensionLoader<T> {
                         }
                         try {
                             String property = getSetterProperty(method);
+
+                            // 扩展点也是依赖，仅仅处理这种情况，如果扩展点不是依赖，就不处理了
                             Object object = objectFactory.getExtension(pt, property);
                             if (object != null) {
                                 method.invoke(instance, object);
@@ -688,14 +710,14 @@ public class ExtensionLoader<T> {
 
     /**
      * 加载 META-INF 目录下的扩展点，并且解析
-     * @param extensionClasses
-     * @param dir
-     * @param type
+     * @param dir   目录，比如 META-INF/dubbo 下的
+     * @param type  类的全限定名，也即是类的路径
      */
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
         String fileName = dir + type;
         try {
             Enumeration<java.net.URL> urls;
+            // 获取 ApplicationClassLoader，通过线程上下文打破双亲委派模型
             ClassLoader classLoader = findClassLoader();
             if (classLoader != null) {
                 urls = classLoader.getResources(fileName);
@@ -714,6 +736,9 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 解析 META-INF 下的配置文件
+     */
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader, java.net.URL resourceURL) {
         try {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
@@ -748,14 +773,24 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 根据解析完的配置文件，加载对应的类实现的 Class 对象
+     * @param extensionClasses  已经加载的类
+     * @param resourceURL   类资源信息
+     * @param clazz 扩展点的类类型，比如 org.apache.dubbo.rpc.Protocol
+     * @param name  org.apache.dubbo.rpc.Protocol
+     */
     private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {
         if (!type.isAssignableFrom(clazz)) {
             throw new IllegalStateException("Error occurred when loading extension class (interface: " +
                     type + ", class line: " + clazz.getName() + "), class "
                     + clazz.getName() + " is not subtype of interface.");
         }
+        // 如果 @Adaptive 修饰在类上，缓存的自适应类只能有一个
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             cacheAdaptiveClass(clazz);
+
+            // 如果发现是自适应类
         } else if (isWrapperClass(clazz)) {
             cacheWrapperClass(clazz);
         } else {
@@ -769,7 +804,10 @@ public class ExtensionLoader<T> {
 
             String[] names = NAME_SEPARATOR.split(name);
             if (ArrayUtils.isNotEmpty(names)) {
+                // 自动激活扩展点
                 cacheActivateClass(clazz, names[0]);
+
+                // 普通扩展点
                 for (String n : names) {
                     cacheName(clazz, n);
                     saveInExtensionClass(extensionClasses, clazz, name);
@@ -846,6 +884,8 @@ public class ExtensionLoader<T> {
      * test if clazz is a wrapper class
      * <p>
      * which has Constructor with given class type as its only argument
+     *
+     * 只要发现扩展点是有构造函数的，这个扩展点就是一个 Wrapper 包装类
      */
     private boolean isWrapperClass(Class<?> clazz) {
         try {

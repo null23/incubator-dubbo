@@ -87,6 +87,7 @@ public class ClassHelper {
 
     /**
      * get class loader
+     * 通过线程上下文打破双亲委派模型
      *
      * @param clazz
      * @return class loader
