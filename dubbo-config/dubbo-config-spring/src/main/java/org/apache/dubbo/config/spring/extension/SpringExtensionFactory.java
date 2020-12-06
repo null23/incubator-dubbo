@@ -40,6 +40,9 @@ import java.util.Set;
 public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
+    /**
+     * 保存了此时 Spring 容器的上下文，在服务发布或者引用的时候用到过
+     */
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
     private static final ApplicationListener shutdownHookListener = new ShutdownHookListener();
 
@@ -74,6 +77,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             return null;
         }
 
+        // 遍历所有 Spring 下文 ， 先根据名字从 Spring 容器中查找，找不到在根据类类型找
         for (ApplicationContext context : contexts) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);
@@ -89,6 +93,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             return null;
         }
 
+        // 根据类类型找
         for (ApplicationContext context : contexts) {
             try {
                 return context.getBean(type);

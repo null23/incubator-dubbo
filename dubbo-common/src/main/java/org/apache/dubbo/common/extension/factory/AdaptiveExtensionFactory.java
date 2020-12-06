@@ -30,11 +30,16 @@ import java.util.List;
 @Adaptive
 public class AdaptiveExtensionFactory implements ExtensionFactory {
 
+    /**
+     * 工厂列表也是通过 SPI 实现的，因此可以获取自定义的工厂，SPI 在前，Spring 在后
+     */
     private final List<ExtensionFactory> factories;
 
     public AdaptiveExtensionFactory() {
         ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
         List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();
+
+        // 先加载 SpiExtensionFactory 的，再加载 SpringExtensionFactory 的
         for (String name : loader.getSupportedExtensions()) {
             list.add(loader.getExtension(name));
         }

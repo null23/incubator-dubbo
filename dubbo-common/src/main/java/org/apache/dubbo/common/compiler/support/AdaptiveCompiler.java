@@ -22,6 +22,9 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 
 /**
  * AdaptiveCompiler. (SPI, Singleton, ThreadSafe)
+ * 加载 Compile 的时候一定是获取的这个，AdaptiveCompiler 实现类
+ * 但是呢，AdaptiveCompiler 里又通过 获取默认扩展点 的方式，来获取 Compiler 上的 @SPI 里的 javassist
+ * 以此来实现通过 @Adaptive 来对各个实现类进行管理
  */
 @Adaptive
 public class AdaptiveCompiler implements Compiler {
