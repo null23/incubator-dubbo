@@ -134,6 +134,18 @@ public class RegistryProtocol implements Protocol {
         this.cluster = cluster;
     }
 
+    /**
+     * TODO
+     * 核心
+     * 这里的 Protocol 是怎么加载的？
+     *
+     * 是通过 org.apache.dubbo.common.extension.ExtensionLoader#injectExtension(java.lang.Object) 来加载的
+     * 默认是通过 AdaptiveExtensionFactory 来加载的，而 AdaptiveExtensionFactory 是管理所有 ExtensionFactory 的，会使用 SpiExtensionFactory 来加载扩展点
+     * SpiExtensionFactory 其实还是通过 getAdaptiveExtension 来加载扩展点的
+     *
+     * getAdaptiveExtension 是怎么加载扩展点的？
+     *
+     */
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
