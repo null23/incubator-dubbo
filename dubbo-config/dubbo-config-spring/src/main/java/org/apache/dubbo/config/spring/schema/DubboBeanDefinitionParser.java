@@ -70,6 +70,14 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * 解析自定义标签，比如 dubbo-provider.xml 中的一些 dubbo 自定义的标签
+     *
+     * 主要是这些信息：
+     *  注册中心的信息 - <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+     *  协议的信息 - <dubbo:protocol name="dubbo"/>
+     *  服务的信息 - <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"/>
+     */
     private static BeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
         /**
          * 把标签解析成对应的 Bean 定义并注册到 Spring 上下文中，同时保证了 Spring 容器中相同 id 的 Bean 不会被覆盖
@@ -106,10 +114,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         }
 
 
-
-
-
-        // 开始真正的解析逻辑
+        // 开始真正的解析自定义的标签
         if (ProtocolConfig.class.equals(beanClass)) {
             for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {
                 BeanDefinition definition = parserContext.getRegistry().getBeanDefinition(name);
@@ -178,6 +183,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 } else if ("arguments".equals(property)) {
                     parseArguments(id, element.getChildNodes(), beanDefinition, parserContext);
                 } else {
+
+                    // 获取配置的实际的值，比如 registry 配置的是 zookeeper
                     String value = element.getAttribute(property);
                     if (value != null) {
                         value = value.trim();
@@ -186,6 +193,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                 RegistryConfig registryConfig = new RegistryConfig();
                                 registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
                                 beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
+
+                                // 配置注册中心，等等，组装元数据信息
                             } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && ServiceBean.class.equals(beanClass))) {
                                 /**
                                  * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'

@@ -26,7 +26,7 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 /**
  * DubboNamespaceHandler
  *
- * @export 解析配置文件，把不同的标签关联到解析实现类中
+ * @export 解析自定义标签，把不同的标签关联到解析实现类中
  */
 public class DubboNamespaceHandler extends NamespaceHandlerSupport {
 
@@ -52,5 +52,4 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, false));
         registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
     }
-
 }

@@ -104,6 +104,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         return service;
     }
 
+    /**
+     * ApplicationContext 被初始化或者刷新之后，接收到此事件
+     * @param event ApplicationContext 初始化/刷新 的事件
+     */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (!isExported() && !isUnexported()) {
@@ -114,6 +118,12 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         }
     }
 
+    /**
+     * 做了类似于手动依赖注入的事情
+     * 比如给 AbstractInterfaceConfig，set 了一些后续需要用到的关键信息，比如 registries 设置为 zookeeper
+     * ServiceConfig 是 AbstractInterfaceConfig 的子类，调用 loadRegistries() 的时候也是从 AbstractInterfaceConfig 调用的
+     * 因此就需要之前加载的 RegistryConfig 类中的注册中心相关的信息
+     */
     @Override
     @SuppressWarnings({"unchecked", "deprecation"})
     public void afterPropertiesSet() throws Exception {
@@ -192,6 +202,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
 
+        // 配置注册中心
+        // 加载 bean 元数据信息的时候，已经给 RegistryConfig 的元数据信息设置进了我们的配置信息
+        // 比如设置的 <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+        // 那么就会获取到这个 address
         if ((CollectionUtils.isEmpty(getRegistries()))
                 && (getProvider() == null || CollectionUtils.isEmpty(getProvider().getRegistries()))
                 && (getApplication() == null || CollectionUtils.isEmpty(getApplication().getRegistries()))) {
@@ -213,6 +227,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                         }
                     }
                 }
+                // 设置 AbstractInterfaceConfig 的 address 属性
+                // 以后在 ServiceBean 初始化调用 afterPropertiesSet（也就是现在）的时候，直接触发对注册中心 address 属性的初始化
                 if (!registryConfigs.isEmpty()) {
                     super.setRegistries(registryConfigs);
                 }

@@ -68,6 +68,11 @@ import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
  * ServiceConfig
  *
  * @export
+ *
+ * ServiceConfig 为什么继承了 AbstractServiceConfig？
+ * AbstractServiceConfig 继承了 AbstractInterfaceConfig，AbstractInterfaceConfig 继承了 AbstractMethodConfig。
+ * 举个例子，ServiceConfig 是支持方法级别的配置的，比如多注册中心
+ * 那么就必须在 AbstractInterfaceConfig 里提供一个 loadRegistries 方法
  */
 public class ServiceConfig<T> extends AbstractServiceConfig {
 
@@ -412,15 +417,34 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        // 加载注册中心
+        // org.apache.dubbo.config.spring.schema.DubboBeanDefinitionParser.parse 这里之前在加载 Bean 元数据信息的时候，就已经通过配置文件信息，解析出我们配置的注册中心了
+        // org.apache.dubbo.config.spring.schema.DubboNamespaceHandler.init 这里触发的
+
+        // 这里获取到的就是我们在 xml 里实际配置的注册中心，比如 <dubbo:registry address="zookeeper://127.0.0.1:2181"/> 中的 address 属性
+        // 根据 zookeeper://127.0.0.1:2181 先拼接一段属于注册中心信息的 URL
+
+        // registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&pid=19024&qos.port=22222&registry=zookeeper&timestamp=1607453180254
+        // 获取拼接的一部分 URL，先拼接了一部分注册中心的信息
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
+            // interface group version 组成的 key
             String pathKey = URL.buildKey(getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), group, version);
+
+            // 服务发布的元数据
             ProviderModel providerModel = new ProviderModel(pathKey, ref, interfaceClass);
             ApplicationModel.initProviderModel(pathKey, providerModel);
+
+            // 发布服务
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
 
+    /**
+     * 发布服务
+     * @param protocolConfig 协议
+     * @param registryURLs 基于注册中心信息，已经拼接了一些的 URL
+     */
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
         if (StringUtils.isEmpty(name)) {

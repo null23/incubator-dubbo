@@ -283,6 +283,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      *
      * @param provider whether it is the provider side
      * @return
+     *
+     * 拼接有关于 注册中心 的 URL
+     *
+     * AbstractInterfaceConfig 和 RegistryConfig，是一对多的关系
+     * AbstractInterfaceConfig 是基于接口的配置，而 RegistryConfig 是针对一个标签项的配置
+     * Dubbo 是支持配置多注册中心的，如果要获取到所有配置的注册中心，就要放到 AbstractInterfaceConfig 里来维护多个 RegistryConfig 信息
      */
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
