@@ -296,6 +296,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 setPath(beanName);
             }
         }
+
+        //
         if (!supportedApplicationListener) {
             export();
         }
