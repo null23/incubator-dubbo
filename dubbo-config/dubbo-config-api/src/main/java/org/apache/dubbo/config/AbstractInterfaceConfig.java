@@ -289,6 +289,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * AbstractInterfaceConfig 和 RegistryConfig，是一对多的关系
      * AbstractInterfaceConfig 是基于接口的配置，而 RegistryConfig 是针对一个标签项的配置
      * Dubbo 是支持配置多注册中心的，如果要获取到所有配置的注册中心，就要放到 AbstractInterfaceConfig 里来维护多个 RegistryConfig 信息
+     *
+     * <dubbo:service registry="dubbodemo" timeout="3000" interface="com.chanshuyi.service.IUserService" ref="userService"/>
+     * <dubbo:service registry="dubbodemo_copy" timeout="3000" interface="com.chanshuyi.service.IBookService" ref="bookService"/>
      */
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
