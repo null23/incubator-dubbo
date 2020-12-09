@@ -119,6 +119,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     }
 
     /**
+     * ServiceBean 被实例化之后，Spring 容器回调
+     *
      * 做了类似于手动依赖注入的事情
      * 比如给 AbstractInterfaceConfig，set 了一些后续需要用到的关键信息，比如 registries 设置为 zookeeper
      * ServiceConfig 是 AbstractInterfaceConfig 的子类，调用 loadRegistries() 的时候也是从 AbstractInterfaceConfig 调用的
