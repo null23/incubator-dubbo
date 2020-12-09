@@ -110,7 +110,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     /**
      * TODO 多个 bean，Spring 初始化这些 bean 的顺序？默认应该是直接按照 beanName 在 Map 里的顺序来初始化的，有依赖其他的 bean 就先初始化其他的 bean
      * ServiceBean 被实例化之后，Spring 容器回调，但是此时其他 bean 其实不一定已经被初始化了
-     * 但是能看到，ProtocolConfig，ApplicationConfig，RegistryConfig 是优先于 ServiceBean 被初始化的
+     * 其实这里并不需要关注 bean 的初始化顺序，因为：
+     *  - BeanFactoryUtils.beansOfTypeIncludingAncestors()，ServiceBean 是通过这个来初始化那些还没有被实例化的 bean 的
+     *  - 底层还是用的 org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean() 来获取 bean 实例的
      * <p>
      * <p>
      * 做了类似于手动依赖注入的事情
