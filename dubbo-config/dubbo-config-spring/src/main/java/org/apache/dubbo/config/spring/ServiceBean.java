@@ -19,29 +19,16 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.MonitorConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
-
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.ApplicationListener;
+import org.springframework.context.*;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.util.ArrayList;
@@ -106,6 +93,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     /**
      * ApplicationContext 被初始化或者刷新之后，接收到此事件
+     * 先有InitializingBean，后有 ApplicationListener<ContextRefreshedEvent>
+     *
      * @param event ApplicationContext 初始化/刷新 的事件
      */
     @Override
@@ -119,8 +108,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     }
 
     /**
-     * ServiceBean 被实例化之后，Spring 容器回调
-     *
+     * ServiceBean 被实例化之后，Spring 容器回调，但是此时其他 bean 其实不一定已经被初始化了
+     * 但是能看到，ProtocolConfig，ApplicationConfig，RegistryConfig 是优先于 ServiceBean 被初始化的
+     * <p>
      * 做了类似于手动依赖注入的事情
      * 比如给 AbstractInterfaceConfig，set 了一些后续需要用到的关键信息，比如 registries 设置为 zookeeper
      * ServiceConfig 是 AbstractInterfaceConfig 的子类，调用 loadRegistries() 的时候也是从 AbstractInterfaceConfig 调用的
