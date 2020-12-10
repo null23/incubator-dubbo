@@ -93,8 +93,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
 
-    // TODO
-    // 这里其实就是获取的默认的扩展点，获取的是 Protocol 类上的 @SPI 里的 dubbo 协议
+    /**
+     * 这里获取的是 URL 上动态生成的协议，如果没有获取到 URL 上的协议，就获取默认的协议
+     * @see org.apache.dubbo.demo.provider.Protocol$Adaptive#export(org.apache.dubbo.rpc.Invoker)
+     */
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     /**
@@ -556,6 +558,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
+
+                // 暴露服务 inJvm
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
@@ -607,6 +611,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
+    /**
+     * 本地暴露服务
+     */
     private void exportLocal(URL url) {
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
             URL local = URLBuilder.from(url)
@@ -614,6 +621,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setHost(LOCALHOST_VALUE)
                     .setPort(0)
                     .build();
+            // URL 设置了 setProtocol(Constants.LOCAL_PROTOCOL)，那么 Protocol 的代理类就会获取 local 的实现类，也就是动态获取了 InjvmProtocol
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
