@@ -23,11 +23,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ClassHelper;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.*;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -47,29 +43,18 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.Constants.LOCALHOST_VALUE;
-import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
+import static org.apache.dubbo.common.utils.NetUtils.*;
 
 /**
  * ServiceConfig
  *
- * @export
- *
- * ServiceConfig 为什么继承了 AbstractServiceConfig？
+ * @export ServiceConfig 为什么继承了 AbstractServiceConfig？
  * AbstractServiceConfig 继承了 AbstractInterfaceConfig，AbstractInterfaceConfig 继承了 AbstractMethodConfig。
  * 举个例子，ServiceConfig 是支持方法级别的配置的，比如多注册中心
  * 那么就必须在 AbstractInterfaceConfig 里提供一个 loadRegistries 方法
@@ -95,6 +80,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * 这里获取的是 URL 上动态生成的协议，如果没有获取到 URL 上的协议，就获取默认的协议
+     *
      * @see org.apache.dubbo.demo.provider.Protocol$Adaptive#export(org.apache.dubbo.rpc.Invoker)
      */
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -444,8 +430,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * 发布服务
+     *
      * @param protocolConfig 协议
-     * @param registryURLs 基于注册中心信息，已经拼接了一些的 URL
+     * @param registryURLs   基于注册中心信息，已经拼接了一些的 URL
      */
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
@@ -552,6 +539,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
 
+
+        /**
+         * 默认是会同时暴露本地服务和远程服务
+         * 也就是 local 和 remote
+         * protocol 分别是 injvm 和 registry
+         */
         String scope = url.getParameter(Constants.SCOPE_KEY);
         // don't export when none is configured
         if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {
@@ -560,6 +553,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
 
                 // 暴露服务 inJvm
+                // org.apache.dubbo.demo.provider.Protocol$Adaptive.export
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
@@ -567,6 +561,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
+                // 如果有注册中心，就会暴露远程服务
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
                     for (URL registryURL : registryURLs) {
                         url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
@@ -584,9 +579,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
                         }
 
+                        // URL 现在的 protocol 为 registry
+                        // registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString())
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
+                        // 这走的是 RegistryProtocol.export()
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }
@@ -613,15 +611,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @SuppressWarnings({"unchecked", "rawtypes"})
     /**
      * 本地暴露服务
+     * @see org.apache.dubbo.demo.provider.Protocol$Adaptive#export(org.apache.dubbo.rpc.Invoker)
      */
     private void exportLocal(URL url) {
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+
+            // 重新构建一个 URL，protocol = injvm
             URL local = URLBuilder.from(url)
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(LOCALHOST_VALUE)
                     .setPort(0)
                     .build();
             // URL 设置了 setProtocol(Constants.LOCAL_PROTOCOL)，那么 Protocol 的代理类就会获取 local 的实现类，也就是动态获取了 InjvmProtocol
+            // @see org.apache.dubbo.demo.provider.Protocol$Adaptive.export
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
@@ -826,7 +828,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null) {
             return;
         }
-        setProvider (
+        setProvider(
                 ConfigManager.getInstance()
                         .getDefaultProvider()
                         .orElseGet(() -> {
@@ -857,15 +859,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-               setProtocols(
-                       ConfigManager.getInstance().getDefaultProtocols()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            ProtocolConfig protocolConfig = new ProtocolConfig();
-                            protocolConfig.refresh();
-                            return Arrays.asList(protocolConfig);
-                        })
-               );
+                setProtocols(
+                        ConfigManager.getInstance().getDefaultProtocols()
+                                .filter(CollectionUtils::isNotEmpty)
+                                .orElseGet(() -> {
+                                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                                    protocolConfig.refresh();
+                                    return Arrays.asList(protocolConfig);
+                                })
+                );
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
