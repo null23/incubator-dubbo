@@ -115,6 +115,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
 
         // 开始真正的解析自定义的标签
+        // 正常来说这里的 就是 dubbo 协议
         if (ProtocolConfig.class.equals(beanClass)) {
             for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {
                 BeanDefinition definition = parserContext.getRegistry().getBeanDefinition(name);

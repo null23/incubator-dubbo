@@ -91,6 +91,8 @@ import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 
 /**
  * RegistryProtocol
+ *
+ * 这里有 setProtocol 方法，而且 Protocol 又是一个扩展类
  */
 public class RegistryProtocol implements Protocol {
 
@@ -145,6 +147,8 @@ public class RegistryProtocol implements Protocol {
      *
      * getAdaptiveExtension 是怎么加载扩展点的？
      *
+     * 这里就会使用 Wrapper 类包装了
+     *
      */
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
@@ -198,6 +202,7 @@ public class RegistryProtocol implements Protocol {
 
         //export invoker
         // 启动一个 netty 服务器
+        // 注意此时用的是 providerUrl，providerUrl 的 protocol 是 dubbo，那么 export 方法调用的就是 DubboProtocol 的
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
@@ -234,6 +239,8 @@ public class RegistryProtocol implements Protocol {
 
         return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(key, s -> {
             Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
+
+            // protocol = dubbo，因此这里调用的 export 方法是 DubboProtocol 的方法
             return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
         });
     }
