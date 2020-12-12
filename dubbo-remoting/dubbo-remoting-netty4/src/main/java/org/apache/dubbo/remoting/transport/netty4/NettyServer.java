@@ -74,6 +74,11 @@ public class NettyServer extends AbstractServer implements Server {
         bootstrap = new ServerBootstrap();
 
         bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+
+        // 默认是 CPU 逻辑核 + 1
+        // machdep.cpu.core_count: 4
+        // machdep.cpu.thread_count: 8
+        // machdep.cpu.thread_count: 8 就是 CPU 的逻辑核数量，那么 Constants.DEFAULT_IO_THREADS 就是 8+1 = 9
         workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 new DefaultThreadFactory("NettyServerWorker", true));
 
