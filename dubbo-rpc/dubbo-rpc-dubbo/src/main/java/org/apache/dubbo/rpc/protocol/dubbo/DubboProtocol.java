@@ -84,6 +84,7 @@ public class DubboProtocol extends AbstractProtocol {
     /**
      * consumer side export a stub service for dispatching event
      * servicekey-stubmethods
+     * 本地存根，也就是 provider 自己的缓存
      */
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<>();
 
@@ -281,10 +282,12 @@ public class DubboProtocol extends AbstractProtocol {
                 }
 
             } else {
+                // 加入本地存根集合
                 stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
             }
         }
 
+        // 开启一个 netty 服务器
         openServer(url);
         optimizeSerialization(url);
 
@@ -302,6 +305,7 @@ public class DubboProtocol extends AbstractProtocol {
                 synchronized (this) {
                     server = serverMap.get(key);
                     if (server == null) {
+                        // 开启 netty 服务器
                         serverMap.put(key, createServer(url));
                     }
                 }
@@ -312,11 +316,18 @@ public class DubboProtocol extends AbstractProtocol {
         }
     }
 
+    /**
+     * 默认启动一个 netty 服务器
+     */
     private ExchangeServer createServer(URL url) {
         url = URLBuilder.from(url)
                 // send readonly event when server closes, it's enabled by default
+
+                // 服务器关闭的时候默认发送 readonly 事件，默认情况下启用
                 .addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString())
                 // enable heartbeat by default
+
+                // 心跳默认 1min 一次
                 .addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT))
                 .addParameter(Constants.CODEC_KEY, DubboCodec.NAME)
                 .build();
