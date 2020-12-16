@@ -30,4 +30,6 @@
     local regular interface -->
     <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService"/>
 
+    <dubbo:reference id="demoService2" check="false" interface="org.apache.dubbo.demo.DemoService2"/>
+
 </beans>

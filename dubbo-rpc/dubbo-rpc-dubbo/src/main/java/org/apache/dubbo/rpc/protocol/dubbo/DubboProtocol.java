@@ -340,6 +340,7 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeServer server;
         try {
             // 启动一个 netty 服务器
+            // 这里其实干了好多事儿，其实就是实例化一个 org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);

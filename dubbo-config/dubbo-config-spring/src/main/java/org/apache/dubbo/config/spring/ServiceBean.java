@@ -42,6 +42,9 @@ import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicatio
  * ServiceFactoryBean
  *
  * @export
+ *
+ * 一个 ServiceBean 对应一个 <dubbo:service/> 的自定义标签
+ * 如果定义了多个服务，那么就需要暴露多个服务，那么就会有多个 ServiceBean
  */
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
         ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware,
