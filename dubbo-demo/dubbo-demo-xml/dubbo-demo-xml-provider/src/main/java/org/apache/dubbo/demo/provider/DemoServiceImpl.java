@@ -22,6 +22,8 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class DemoServiceImpl implements DemoService {
     private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
 
@@ -33,6 +35,11 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public String sayHello2(String name) {
+        return null;
+    }
+
+    @Override
+    public String findUser(Long userId, Boolean isStudent, String name, List<Integer> list) {
         return null;
     }
 

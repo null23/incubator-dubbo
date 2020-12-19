@@ -24,6 +24,8 @@ import org.apache.dubbo.demo.DemoService;
 
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component("demoServiceComponent")
 public class DemoServiceComponent implements DemoService {
     @Reference
@@ -36,6 +38,11 @@ public class DemoServiceComponent implements DemoService {
 
     @Override
     public String sayHello2(String name) {
+        return null;
+    }
+
+    @Override
+    public String findUser(Long userId, Boolean isStudent, String name, List<Integer> list) {
         return null;
     }
 }

@@ -16,10 +16,14 @@
  */
 package org.apache.dubbo.demo;
 
+import java.util.List;
+
 public interface DemoService {
 
     String sayHello(String name);
 
     String sayHello2(String name);
+
+    String findUser(Long userId, Boolean isStudent, String name, List<Integer> list);
 
 }
