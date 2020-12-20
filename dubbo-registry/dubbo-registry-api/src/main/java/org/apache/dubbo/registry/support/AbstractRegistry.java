@@ -62,10 +62,16 @@ public abstract class AbstractRegistry implements Registry {
     private static final String URL_SPLIT = "\\s+";
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
     // Local disk cache, where the special key value.registries records the list of registry centers, and the others are the list of notified service providers
     private final Properties properties = new Properties();
+
     // File cache timing writing
+    /**
+     * 异步把内存中的注册中心信息 刷盘 的单线程线程池
+     */
     private final ExecutorService registryCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveRegistryCache", true));
+
     // Is it synchronized to save the file
     private final boolean syncSaveFile;
     private final AtomicLong lastCacheChanged = new AtomicLong();
@@ -93,6 +99,9 @@ public abstract class AbstractRegistry implements Registry {
         this.file = file;
         // When starting the subscription center,
         // we need to read the local cache file for future Registry fault tolerance processing.
+        /**
+         * 加载之前持久化过的 注册中心 信息
+         */
         loadProperties();
         notify(url.getBackupUrls());
     }
@@ -340,6 +349,14 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
+    /**
+     * notify 方法是通知监听器，url的变化结果，不过变化的是全量数据，全量数据意思就是是以服务接口和数据类型为维度全量通知，即不会通知一个服务的同类型的部分数据，
+     * 用户不需要对比上一次通知结果。这里要注意几个重点：
+     *
+     * 1. 发起订阅后，会获取全量数据，此时会调用 notify 方法。即 Registry 获取到了全量数据
+     * 2. 每次注册中心发生变更时会调用 notify 方法虽然变化是增量，调用这个方法的调用方，已经进行处理，传入的urls依然是全量的。
+     * 3. listener.notify，通知监听器，例如，有新的服务提供者启动时，被通知，创建新的 Invoker 对象。
+     */
     protected void notify(List<URL> urls) {
         if (CollectionUtils.isEmpty(urls)) {
             return;

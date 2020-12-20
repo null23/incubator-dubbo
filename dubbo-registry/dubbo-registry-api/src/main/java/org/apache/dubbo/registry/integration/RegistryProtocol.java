@@ -501,6 +501,8 @@ public class RegistryProtocol implements Protocol {
      * 1.Ensure that the exporter returned by registryprotocol can be normal destroyed
      * 2.No need to re-register to the registry after notify
      * 3.The invoker passed by the export method , would better to be the invoker of exporter
+     *
+     * AbstractRegistry 实例化完成之后，会调用这个 OverrideListener
      */
     private class OverrideListener implements NotifyListener {
         private final URL subscribeUrl;
@@ -515,6 +517,8 @@ public class RegistryProtocol implements Protocol {
         }
 
         /**
+         * AbstractRegistry 初始化完成之后会回调这个 Listener
+         *
          * @param urls The list of registered information, is always not empty, The meaning is the same as the
          *             return value of {@link org.apache.dubbo.registry.RegistryService#lookup(URL)}.
          */
@@ -534,9 +538,15 @@ public class RegistryProtocol implements Protocol {
             this.configurators = Configurator.toConfigurators(classifyUrls(matchedUrls, UrlUtils::isConfigurator))
                     .orElse(configurators);
 
+            /**
+             * TODO 这是干什么的
+             */
             doOverrideIfNecessary();
         }
 
+        /**
+         * TODO ？？？
+         */
         public synchronized void doOverrideIfNecessary() {
             final Invoker<?> invoker;
             if (originInvoker instanceof InvokerDelegate) {
@@ -560,6 +570,9 @@ public class RegistryProtocol implements Protocol {
                     .getConfigurators(), newUrl);
             newUrl = getConfigedInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
             if (!currentUrl.equals(newUrl)) {
+                /**
+                 * TODO 为什么需要重新暴露？什么情况才会让这个 if 判断成立？
+                 */
                 RegistryProtocol.this.reExport(originInvoker, newUrl);
                 logger.info("exported provider url changed, origin url: " + originUrl +
                         ", old export url: " + currentUrl + ", new export url: " + newUrl);

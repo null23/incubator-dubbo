@@ -95,6 +95,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
+    /**
+     * 创建一个临时节点 znode
+     */
     @Override
     public void doRegister(URL url) {
         try {
