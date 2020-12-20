@@ -18,6 +18,8 @@ package org.apache.dubbo.common;
 
 /**
  * Node. (API/SPI, Prototype, ThreadSafe)
+ *
+ * Node 代表了一个服务的接口
  */
 public interface Node {
 

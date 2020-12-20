@@ -274,6 +274,14 @@ public abstract class AbstractRegistry implements Registry {
         registered.remove(url);
     }
 
+    /**
+     *
+     * @param url      Subscription condition, not allowed to be empty, e.g. consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     * url 就是消费者
+     *
+     * @param listener A listener of the change event, not allowed to be empty
+     * listener 就是生产者对应的zk节点的监听器
+     */
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         if (url == null) {

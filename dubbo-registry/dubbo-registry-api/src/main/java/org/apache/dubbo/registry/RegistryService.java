@@ -25,10 +25,14 @@ import java.util.List;
  *
  * @see org.apache.dubbo.registry.Registry
  * @see org.apache.dubbo.registry.RegistryFactory#getRegistry(URL)
+ *
+ * 注册中心的相关接口
  */
 public interface RegistryService {
 
     /**
+     * 注册一个服务到注册中心
+     *
      * Register data, such as : provider service, consumer address, route rule, override rule and other data.
      * <p>
      * Registering is required to support the contract:<br>
@@ -43,6 +47,8 @@ public interface RegistryService {
     void register(URL url);
 
     /**
+     * 取消注册一个服务到注册中心
+     *
      * Unregister
      * <p>
      * Unregistering is required to support the contract:<br>
@@ -54,6 +60,8 @@ public interface RegistryService {
     void unregister(URL url);
 
     /**
+     * 订阅服务，Listener 用来监听临时节点的变化
+     *
      * Subscribe to eligible registered data and automatically push when the registered data is changed.
      * <p>
      * Subscribing need to support contracts:<br>
@@ -65,8 +73,13 @@ public interface RegistryService {
      * 6. Allow URLs which have the same URL but different parameters to coexist,they can't cover each other.<br>
      * 7. The subscription process must be blocked, when the first notice is finished and then returned.<br>
      *
+     *
+     *
      * @param url      Subscription condition, not allowed to be empty, e.g. consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     * url 就是消费者
+     *
      * @param listener A listener of the change event, not allowed to be empty
+     * listener 就是生产者在 zk 上的节点所对应的监听器
      */
     void subscribe(URL url, NotifyListener listener);
 
