@@ -475,13 +475,21 @@ public class HashedWheelTimer implements Timer {
             startTimeInitialized.countDown();
 
             do {
+                // 根据周期时间 tickDuration，进行周期性的 tick 下一个槽位
                 final long deadline = waitForNextTick();
                 if (deadline > 0) {
+                    // 获取下一个槽位的角标
                     int idx = (int) (tick & mask);
                     processCancelledTasks();
+
+                    // 获取该角标对应的 HashedWheelBucket 对象
                     HashedWheelBucket bucket =
                             wheel[idx];
+
+                    // 将存储在链表timeOuts中的定时任务存储到对应的槽位的HashedWheelBucket对象中
                     transferTimeoutsToBuckets();
+
+                    // 执行槽位中定时任务
                     bucket.expireTimeouts(deadline);
                     tick++;
                 }
@@ -503,6 +511,9 @@ public class HashedWheelTimer implements Timer {
             processCancelledTasks();
         }
 
+        /**
+         * 取出 timeouts 链表里的数据，放入时间轮中的对应的格子
+         */
         private void transferTimeoutsToBuckets() {
             // transfer only max. 100000 timeouts per tick to prevent a thread to stale the workerThread when it just
             // adds new timeouts in a loop.
@@ -518,6 +529,9 @@ public class HashedWheelTimer implements Timer {
                 }
 
                 long calculated = timeout.deadline / tickDuration;
+
+                // 计算圈数
+                // 如：槽位=8，周期tickDuration=100ms，任务时间=900ms，则说明需要轮询一圈后，才能会执行到该任务，即remainingRounds= 1，槽位角标stopIndex=1
                 timeout.remainingRounds = (calculated - tick) / wheel.length;
 
                 // Ensure we don't schedule for past.
@@ -554,12 +568,17 @@ public class HashedWheelTimer implements Timer {
          * current time otherwise (with Long.MIN_VALUE changed by +1)
          */
         private long waitForNextTick() {
+            // 5000 ms
             long deadline = tickDuration * (tick + 1);
 
             for (; ; ) {
+                // currentTime = 系统当前时间 - Worker线程开始执行时间
                 final long currentTime = System.nanoTime() - startTime;
+
+                // 计算 tick 到下一个槽位需要的时间
                 long sleepTimeMs = (deadline - currentTime + 999999) / 1000000;
 
+                // 可以执行下一个格子的任务
                 if (sleepTimeMs <= 0) {
                     if (currentTime == Long.MIN_VALUE) {
                         return -Long.MAX_VALUE;
@@ -729,6 +748,7 @@ public class HashedWheelTimer implements Timer {
 
         /**
          * Used for the linked-list datastructure
+         * 下一个应该执行的定时任务对应的格子的 head 节点
          */
         private HashedWheelTimeout head;
         private HashedWheelTimeout tail;
@@ -750,6 +770,7 @@ public class HashedWheelTimer implements Timer {
 
         /**
          * Expire all {@link HashedWheelTimeout}s for the given {@code deadline}.
+         * 处理槽位中的定时任务
          */
         void expireTimeouts(long deadline) {
             HashedWheelTimeout timeout = head;
@@ -758,8 +779,12 @@ public class HashedWheelTimer implements Timer {
             while (timeout != null) {
                 HashedWheelTimeout next = timeout.next;
                 if (timeout.remainingRounds <= 0) {
+                    // 将要执行的任务从链表中删除
                     next = remove(timeout);
+
+                    // 任务的时间小于间隔时间，执行任务
                     if (timeout.deadline <= deadline) {
+                        // 执行任务
                         timeout.expire();
                     } else {
                         // The timeout was placed into a wrong slot. This should never happen.

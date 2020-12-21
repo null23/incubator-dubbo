@@ -112,6 +112,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         failedNotified.remove(h);
     }
 
+    /**
+     * 注册失败，加入注册失败对应的缓存，并且添加延时任务到时间轮，等待重试
+     */
     private void addFailedRegistered(URL url) {
         FailedRegisteredTask oldOne = failedRegistered.get(url);
         if (oldOne != null) {
@@ -240,15 +243,25 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return failedNotified;
     }
 
+    /**
+     * 注册的核心逻辑
+     *  1. 删除注册失败的缓存
+     *  2. 向注册中心发起一个注册的请求（默认是）
+     */
     @Override
     public void register(URL url) {
+        // 抽象父类中维护一些注册信息的缓存
         super.register(url);
         removeFailedRegistered(url);
         removeFailedUnregistered(url);
         try {
             // Sending a registration request to the server side
+            // 向注册中心发起一个注册请求
             doRegister(url);
         } catch (Exception e) {
+            /**
+             * 注册失败了，需要添加时间轮的延时任务定时重试
+             */
             Throwable t = e;
 
             // If the startup detection is opened, the Exception is thrown directly.
@@ -266,6 +279,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
+            // 添加延时任务到时间轮，默认 5000ms 后重试
             addFailedRegistered(url);
         }
     }
@@ -362,6 +376,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 其实还是调用的抽象父类 AbstractRegistry 的 notify 方法
+     * @param url      consumer side url
+     * @param listener listener
+     * @param urls     provider latest urls
+     */
     @Override
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
         if (url == null) {
@@ -371,6 +391,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             throw new IllegalArgumentException("notify listener == null");
         }
         try {
+            // 调用抽象父类 AbstractRegistry 的 notify
             doNotify(url, listener, urls);
         } catch (Exception t) {
             // Record a failed registration request to a failed list, retry regularly
@@ -379,10 +400,16 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 其实还是调用的抽象父类 AbstractRegistry 的 notify 方法
+     */
     protected void doNotify(URL url, NotifyListener listener, List<URL> urls) {
         super.notify(url, listener, urls);
     }
 
+    /**
+     * 注册失败后，添加失败的延时任务到时间轮
+     */
     @Override
     protected void recover() throws Exception {
         // register
