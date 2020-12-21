@@ -105,9 +105,21 @@ public class HashedWheelTimer implements Timer {
     @SuppressWarnings({"unused", "FieldMayBeFinal"})
     private volatile int workerState;
 
+    /**
+     * 任务执行的时间周期，也就是一个格子的时间周期
+     */
     private final long tickDuration;
+
+    /**
+     * 格子组成的数组，数组上的每一个元素都是一个链表
+     */
     private final HashedWheelBucket[] wheel;
+
+    /**
+     * 时间轮槽位数
+     */
     private final int mask;
+
     private final CountDownLatch startTimeInitialized = new CountDownLatch(1);
     private final Queue<HashedWheelTimeout> timeouts = new LinkedBlockingQueue<>();
     private final Queue<HashedWheelTimeout> cancelledTimeouts = new LinkedBlockingQueue<>();
@@ -236,10 +248,15 @@ public class HashedWheelTimer implements Timer {
         }
 
         // Normalize ticksPerWheel to power of two and initialize the wheel.
+        // 初始化 wheel size 为 2 的倍数
+        // FailbackRegistryHashWheel 的 wheelSize = 128
         wheel = createWheel(ticksPerWheel);
+
+        // FailbackRegistryHashWheel 的 mask = 127（槽位数）
         mask = wheel.length - 1;
 
         // Convert tickDuration to nanos.
+        // FailbackRegistryHashWheel 的时间周期是 5000 ms
         this.tickDuration = unit.toNanos(tickDuration);
 
         // Prevent overflow.
@@ -248,6 +265,8 @@ public class HashedWheelTimer implements Timer {
                     "tickDuration: %d (expected: 0 < tickDuration in nanos < %d",
                     tickDuration, Long.MAX_VALUE / wheel.length));
         }
+
+        // 时间轮的工作线程
         workerThread = threadFactory.newThread(worker);
 
         this.maxPendingTimeouts = maxPendingTimeouts;
