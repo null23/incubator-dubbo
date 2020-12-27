@@ -44,6 +44,8 @@ import java.lang.reflect.Type;
  *
  * @see Filter
  *
+ * 针对不同的序列化协议进行适配，根据协议重新封装 RpcResult 中的返回结果
+ * Dubbo 默认的序列化协议是 hessian2
  */
 public class CompatibleFilter implements Filter {
 

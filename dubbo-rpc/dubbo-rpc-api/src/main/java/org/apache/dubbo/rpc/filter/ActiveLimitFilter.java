@@ -19,12 +19,7 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.*;
 
 /**
  * ActiveLimitFilter restrict the concurrent client invocation for a service or service's method from client side.
@@ -37,6 +32,9 @@ import org.apache.dubbo.rpc.RpcStatus;
  * </pre>
  *
  * @see Filter
+ * <p>
+ * 每个服务的每个方法的最大可并行调用数量限制的过滤器
+ * 用于限制消费者的并发请求数
  */
 @Activate(group = Constants.CONSUMER, value = Constants.ACTIVES_KEY)
 public class ActiveLimitFilter implements Filter {
