@@ -21,28 +21,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassHelper;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.Holder;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.*;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
@@ -209,7 +195,7 @@ public class ExtensionLoader<T> {
      * @param group  group
      * @return extension list which are activated
      * @see org.apache.dubbo.common.extension.Activate
-     *
+     * <p>
      * 获取自动激活扩展点
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
@@ -340,7 +326,7 @@ public class ExtensionLoader<T> {
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
-     *
+     * <p>
      * 获取对应的扩展点实例，比如在 META-INF 里自定义的协议的实例
      */
     @SuppressWarnings("unchecked")
@@ -561,6 +547,7 @@ public class ExtensionLoader<T> {
             injectExtension(instance);
 
             // 遍历所有包装类的实例，用于初始化包装类实例
+            // 使用策略模式，例如调用 Protocol.class 的 getExtension() 的时候，就会包装 ProtocolFilterWrapper，ProtocolListenerWrapper，QosProtocolWrapper
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
                 for (Class<?> wrapperClass : wrapperClasses) {
@@ -673,6 +660,7 @@ public class ExtensionLoader<T> {
 
     /**
      * 加载一些扩展点的配置文件，在我们自己实现的 META-INF 目录下的那些，以及 dubbo 自己定义的 META-INF 的那些
+     *
      * @return
      */
     private Map<String, Class<?>> loadExtensionClasses() {
@@ -691,7 +679,7 @@ public class ExtensionLoader<T> {
 
     /**
      * extract and cache default extension name if exists
-     *
+     * <p>
      * 获取当前 Class 的 @SPI 注解里的默认值
      */
     private void cacheDefaultExtensionName() {
@@ -713,8 +701,9 @@ public class ExtensionLoader<T> {
 
     /**
      * 加载 META-INF 目录下的扩展点，并且解析
-     * @param dir   目录，比如 META-INF/dubbo 下的
-     * @param type  类的全限定名，也即是类的路径
+     *
+     * @param dir  目录，比如 META-INF/dubbo 下的
+     * @param type 类的全限定名，也即是类的路径
      */
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
         String fileName = dir + type;
@@ -778,10 +767,11 @@ public class ExtensionLoader<T> {
 
     /**
      * 根据解析完的配置文件，加载对应的类实现的 Class 对象
-     * @param extensionClasses  已经加载的类
-     * @param resourceURL   类资源信息
-     * @param clazz 扩展点的类类型，比如 org.apache.dubbo.rpc.Protocol
-     * @param name  org.apache.dubbo.rpc.Protocol
+     *
+     * @param extensionClasses 已经加载的类
+     * @param resourceURL      类资源信息
+     * @param clazz            扩展点的类类型，比如 org.apache.dubbo.rpc.Protocol
+     * @param name             org.apache.dubbo.rpc.Protocol
      */
     private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {
         if (!type.isAssignableFrom(clazz)) {
@@ -887,7 +877,7 @@ public class ExtensionLoader<T> {
      * test if clazz is a wrapper class
      * <p>
      * which has Constructor with given class type as its only argument
-     *
+     * <p>
      * 只要发现扩展点是有构造函数的，这个扩展点就是一个 Wrapper 包装类
      */
     private boolean isWrapperClass(Class<?> clazz) {
