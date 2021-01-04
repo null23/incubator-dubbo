@@ -45,6 +45,8 @@ import java.util.Map;
 
 /**
  * ReferenceFactoryBean
+ *
+ * 一个 ReferenceBean 对应一个配置文件中的 <dubbo:reference/> 标签
  */
 public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
 

@@ -302,6 +302,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
+        // TODO 这里是核心，创建 Invoker
         ref = createProxy(map);
 
         String serviceKey = URL.buildKey(interfaceName, group, version);
