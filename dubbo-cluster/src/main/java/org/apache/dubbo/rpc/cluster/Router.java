@@ -50,6 +50,8 @@ public interface Router extends Comparable<Router> {
      * @param invocation invocation
      * @return routed invokers
      * @throws RpcException
+     *
+     * 筛选出跟规则匹配的Invoker集合
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 

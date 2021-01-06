@@ -29,6 +29,8 @@ import java.util.List;
  * <a href="http://en.wikipedia.org/wiki/Directory_service">Directory Service</a>
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
+ *
+ * 代表了多个 invoker，并且 invokers 的值会随着注册中心的服务变更推送而发生变化
  */
 public interface Directory<T> extends Node {
 
