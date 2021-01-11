@@ -31,6 +31,7 @@ import java.util.List;
 /**
  * BroadcastClusterInvoker
  *
+ * 类似于广播的 invoker，会遍历调用集群中所有的该服务
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
