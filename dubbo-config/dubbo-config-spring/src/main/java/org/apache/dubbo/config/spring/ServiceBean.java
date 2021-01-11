@@ -95,6 +95,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     }
 
     /**
+     * Spring 容器初始化完成后触发 onApplicationEvent
+     * 当 Spring 容器初始化完毕之后，才触发服务的暴露
+     * 这是 2.6.5 版本以后的实现，之前的版本，貌似不是这么实现的，是加载到一个 <dubbo:service/> 就暴露一个服务
+     *
      * ApplicationContext 被初始化或者刷新之后，接收到此事件
      * 先有InitializingBean，后有 ApplicationListener<ContextRefreshedEvent>
      *
