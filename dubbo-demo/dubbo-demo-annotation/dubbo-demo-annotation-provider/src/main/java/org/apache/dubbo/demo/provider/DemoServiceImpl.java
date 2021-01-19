@@ -33,13 +33,15 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public String sayHello(String name) {
+        sayHello2("DemoServiceImpl maybe injvmInvoker...");
         logger.info("Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
         return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
     @Override
     public String sayHello2(String name) {
-        return null;
+        logger.info("sayHello2 " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+        return "sayHello2 " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
     @Override
