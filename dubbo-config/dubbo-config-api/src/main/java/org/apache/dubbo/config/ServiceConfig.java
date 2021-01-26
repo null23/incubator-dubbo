@@ -123,6 +123,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * The reference of the interface implementation
+     *
+     * 需要暴露的服务的接口
      */
     private T ref;
 
@@ -583,6 +585,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         // URL 现在的 protocol 为 registry
                         // registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString())
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+
+                        // 装饰模式，把源数据信息包装成为一个新的 Invoker
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         // 这走的是 RegistryProtocol.export()
