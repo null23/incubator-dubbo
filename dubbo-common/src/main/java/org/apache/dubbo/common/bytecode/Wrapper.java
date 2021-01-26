@@ -98,6 +98,14 @@ public abstract class Wrapper {
     private static AtomicLong WRAPPER_CLASS_COUNTER = new AtomicLong(0);
 
     /**
+     * 获取包装类，其实就是对功能的增强，例如
+     * @see org.apache.dubbo.common.bytecode.Wrapper0
+     * 最后增强的结果都是长这个样
+     *
+     * Wrapper增强 和 动态代理增强 的区别在于
+     *     - Wrapper 是直接生成字符串，然后把字符串的类信息编译成类。
+     *     - 动态代理需要通过反射的方式来创建新的类，性能没有直接通过字符串编译成类并且实例化性能好
+     *
      * get wrapper.
      *
      * @param c Class instance.
