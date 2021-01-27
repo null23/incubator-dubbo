@@ -363,7 +363,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
 
+            // 如果是单注册中心，比如只有 zk 作为注册中心，那就直接创建 invoker
             if (urls.size() == 1) {
+                // 这里调用的是 RegistryProtocol 的 refer 方法
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
