@@ -24,6 +24,8 @@ import java.util.Map;
  * @serial Don't change the class name and package name.
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see org.apache.dubbo.rpc.RpcInvocation
+ *
+ * 是 Dubbo 中的会话域，代表了一次调用中所包含的上下文信息
  */
 public interface Invocation {
 

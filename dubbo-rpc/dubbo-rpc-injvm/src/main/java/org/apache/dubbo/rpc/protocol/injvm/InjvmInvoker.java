@@ -34,6 +34,9 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final String key;
 
+    /**
+     * InjvmInvoker 内部维护了 serviceKey -> 已经暴露的服务
+     */
     private final Map<String, Exporter<?>> exporterMap;
 
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {

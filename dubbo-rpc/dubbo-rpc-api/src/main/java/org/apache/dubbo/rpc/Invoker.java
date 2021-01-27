@@ -24,6 +24,8 @@ import org.apache.dubbo.common.Node;
  * @see org.apache.dubbo.rpc.Protocol#refer(Class, org.apache.dubbo.common.URL)
  * @see org.apache.dubbo.rpc.InvokerListener
  * @see org.apache.dubbo.rpc.protocol.AbstractInvoker
+ *
+ * 是 Dubbo 中的实体域，代表了一次调用
  */
 public interface Invoker<T> extends Node {
 
