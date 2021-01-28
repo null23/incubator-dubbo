@@ -79,7 +79,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      */
 
     /**
-     * 这里获取的是 URL 上动态生成的协议，如果没有获取到 URL 上的协议，就获取默认的协议
+     * 这里的 Protocol 单纯就是一个代理类，在初始化的时候不属于任何 Protocol
+     * 只有在真正调用 protocol.export(invoker) 的时候，才能根据 invoker 上的 URL 判断出需要转化为哪种 Protocol
      *
      * @see org.apache.dubbo.demo.provider.Protocol$Adaptive#export(org.apache.dubbo.rpc.Invoker)
      */
