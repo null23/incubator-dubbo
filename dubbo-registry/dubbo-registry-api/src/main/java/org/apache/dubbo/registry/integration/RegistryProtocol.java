@@ -104,6 +104,8 @@ public class RegistryProtocol implements Protocol {
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
+
+    // 通过 setter 方法，使用 Dubbo 的依赖注入的方式进行设置
     private Cluster cluster;
     private Protocol protocol;
     private RegistryFactory registryFactory;

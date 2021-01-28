@@ -82,6 +82,10 @@ public class ExtensionLoader<T> {
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
 
+    /**
+     * 缓存的 wrapper 类
+     * 只要构造函数中有 自适应扩展类 的类，都属于 Wrapper 类
+     */
     private Set<Class<?>> cachedWrapperClasses;
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();

@@ -36,6 +36,11 @@ import java.util.List;
  * 这个就是一个作为 filter 的 wrapper 类
  * 使用了 Protocol 扩展点作为构造函数
  * 作为一个扩展点的实现类，只要有构造函数，就是一个 Wrapper 类
+ *
+ * 是作为配置，被 org.apache.dubbo.common.extension.ExtensionLoader#loadResource(java.util.Map, java.lang.ClassLoader, java.net.URL) 加载出来的
+ * 然后被缓存到 ExtensionLoader 的 cachedWrapperClasses 中  org.apache.dubbo.common.extension.ExtensionLoader#cachedWrapperClasses
+ *
+ * 在真正加载 Protocol 的时候，比如 DubboProtocol，就会作为包装类，依次包装在 DubboProtocol 外边，作为对 DubboProtocol 的增强
  */
 public class ProtocolFilterWrapper implements Protocol {
 
