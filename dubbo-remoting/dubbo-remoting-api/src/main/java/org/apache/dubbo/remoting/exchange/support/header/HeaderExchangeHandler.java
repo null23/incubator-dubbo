@@ -185,6 +185,14 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
+    /**
+     * TODO
+     * org.apache.dubbo.remoting.transport.dispatcher.all.AllChannelHandler
+     * 默认应该是 AllChannelHandler 处理的，也就是所有 IO 事件（连接，请求，响应，断开）都是 Dubbo 的业务线程池来处理的
+     * @param channel channel.
+     * @param message message.
+     * @throws RemotingException
+     */
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
@@ -196,6 +204,9 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 if (request.isEvent()) {
                     handlerEvent(channel, request);
                 } else {
+                    /**
+                     * 如果需要响应，也就是返回结果
+                     */
                     if (request.isTwoWay()) {
                         handleRequest(exchangeChannel, request);
                     } else {
