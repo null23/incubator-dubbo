@@ -35,6 +35,9 @@ public class Request {
 
     private String mVersion;
 
+    /**
+     * 是否需要相应
+     */
     private boolean mTwoWay = true;
 
     private boolean mEvent = false;

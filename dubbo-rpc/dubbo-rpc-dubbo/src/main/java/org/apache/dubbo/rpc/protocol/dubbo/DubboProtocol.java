@@ -222,6 +222,9 @@ public class DubboProtocol extends AbstractProtocol {
                         .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
     }
 
+    /**
+     * @param inv 会话域，上下文，携带了要请求的接口信息。比如接口名，group，版本号等等。
+     */
     Invoker<?> getInvoker(Channel channel, Invocation inv) throws RemotingException {
         boolean isCallBackServiceInvoke = false;
         boolean isStubServiceInvoke = false;
@@ -241,6 +244,9 @@ public class DubboProtocol extends AbstractProtocol {
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
 
+        /**
+         * serviceKey，在 export 的时候维护了一个 serviceKey 对应的 map
+         */
         String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 

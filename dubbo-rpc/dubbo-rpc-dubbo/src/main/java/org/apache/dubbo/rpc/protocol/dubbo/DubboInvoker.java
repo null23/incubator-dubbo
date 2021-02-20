@@ -41,6 +41,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * DubboInvoker
+ * 给服务消费者 consumer 使用的
+ * 在服务引用的时候才用
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
