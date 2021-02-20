@@ -63,6 +63,9 @@ public abstract class AbstractRegistry implements Registry {
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * 内存缓存的注册中心信息
+     */
     // Local disk cache, where the special key value.registries records the list of registry centers, and the others are the list of notified service providers
     private final Properties properties = new Properties();
 
