@@ -314,6 +314,14 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     *
+     * @param url      Subscription condition, not allowed to be empty, e.g. consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     * url 就是消费者
+     *
+     * @param listener A listener of the change event, not allowed to be empty
+     * listener 就是 RegistryDirectory，里边聚合了多个 provider 远程地址对应的 invokers，并且提供了 invokers 列表发生变更时候的 notify
+     */
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         super.subscribe(url, listener);
