@@ -419,6 +419,10 @@ public class RegistryProtocol implements Protocol {
         // cluster 是通过 setter 方法注入 RegistryProtocol 的
         // 在通过 ExtensionLoader 加载 RegistryProtocol 的时候，就会根据 URL 上的信息加载一个 Cluster 给 RegistryProtocol 注入
         // 默认是 FailoverRegistry
+        /**
+         * 这个 invoker 通过 RegistryDirectory 聚合了多个 DubboInvoker
+         * 默认通过 FailoverCluster 来提供聚合功能的
+         */
         Invoker invoker = cluster.join(directory);
 
         // 向本地注册表，注册消费者
