@@ -547,6 +547,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
+    /**
+     * 根据 invocation 上下文获取服务提供者 invokers
+     * @param invocation  请求上下文
+     */
     @Override
     public List<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
