@@ -397,6 +397,15 @@ public class RegistryProtocol implements Protocol {
         return ExtensionLoader.getExtensionLoader(Cluster.class).getExtension("mergeable");
     }
 
+    /**
+     * @param cluster   FailoverCluster
+     * @param registry Zookeeper
+     * @param type  接口类型
+     * @param url   URL
+     *
+     * @return  通过 FailoverCluster.join(RegistryDirectory) 封装了 RegistryDirectory 的 invoker
+     * RegistryDirectory 中封装了对应多个服务的服务列表，也就是 DubboInvoker
+     */
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
