@@ -228,6 +228,12 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return null;
     }
 
+    /**
+     * 模版方法
+     * 主要是用来继续调用 各个容错机制的 invoker 的 doInvoke 方法
+     * @param invocation  rpc 调用的上下文
+     * @return 实际的返回结果
+     */
     @Override
     public Result invoke(final Invocation invocation) throws RpcException {
         checkWhetherDestroyed();
@@ -238,6 +244,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             ((RpcInvocation) invocation).addAttachments(contextAttachments);
         }
 
+        // 获得所有服务列表，之前通过 发布订阅 注册中心的方式，把所有服务列表通过 notify 保存在了 directory
         List<Invoker<T>> invokers = list(invocation);
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
@@ -272,7 +279,16 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
 
+    /**
+     * 获取 服务提供列表，并且通过 router 过滤掉一部分 invoker
+     *
+     * 之前通过 发布订阅 注册中心的方式，把所有服务列表通过 notify 保存在了 directory
+     * 会通过 invocation 上下文，通过 route 的方式过滤掉一部分 invoker
+     * @param invocation  请求调用上下文
+     */
     protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
+
+        // 基于上下文进行 router 过滤
         return directory.list(invocation);
     }
 
