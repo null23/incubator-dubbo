@@ -91,10 +91,14 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, isSent);
                 RpcContext.getContext().setFuture(null);
                 return new RpcResult();
+
+                // 如果是异步调用，则把 Future 对象封装进 RpcContext，RpcContext 通过 ThreadLocal 获取，和用户线程相关
             } else if (isAsync) {
                 ResponseFuture future = currentClient.request(inv, timeout);
                 // For compatibility
                 FutureAdapter<Object> futureAdapter = new FutureAdapter<>(future);
+
+                // 把 Future 封装进当前 Rpc 上下文
                 RpcContext.getContext().setFuture(futureAdapter);
 
                 Result result;

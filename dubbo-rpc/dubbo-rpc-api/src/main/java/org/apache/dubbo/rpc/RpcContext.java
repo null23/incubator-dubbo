@@ -24,17 +24,8 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -125,6 +116,8 @@ public class RpcContext {
 
     /**
      * get context.
+     * <p>
+     * 通过 ThreadLocal 获取 RpcContext，其实当前线程就是用户线程，就是负责通过 Netty 客户端发送网络请求的那个线程，也就是实际调用 DemoService 的那个线程
      *
      * @return context
      */
